@@ -12,6 +12,10 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -43,7 +47,10 @@ public class MainActivity extends AppCompatActivity {
         btnInsert = findViewById(R.id.btnInsert);
 
         btnInsert.setOnClickListener(v -> {
-            insertData(txt1, txt2, txt3, tvKQ);
+//            insertData(txt1, txt2, txt3, tvKQ);
+//            selectData();
+//            deleteData(txt1);
+            updateData(txt1, txt2, txt3, tvKQ);
         });
 
     }
@@ -71,6 +78,82 @@ public class MainActivity extends AppCompatActivity {
                 tvKQ.setText(throwable.getMessage());
             }
         });
-
     }
+
+    String strKQ = "";
+    List<SanPham> ls;
+    private void selectData () {
+        strKQ = "";
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("http://192.168.1.5/000/api_check/")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+        InsertSanPham sanPham = retrofit.create(InsertSanPham.class);
+        Call<ResSanPham> call = sanPham.selectSanPham();
+        call.enqueue(new Callback<ResSanPham>() {
+            @Override
+            public void onResponse(Call<ResSanPham> call, Response<ResSanPham> response) {
+                ResSanPham res = response.body();
+                ls = new ArrayList<>(Arrays.asList(res.getSanPham()));
+                for(SanPham p: ls){
+                    strKQ += "MaSP"+p.getMaSP()+"; TenSP"+p.getTenSP()+"; MoTa"+p.getMoTa()+"\n";
+                }
+                tvKQ.setText(strKQ);
+            }
+
+            @Override
+            public void onFailure(Call<ResSanPham> call, Throwable throwable) {
+                tvKQ.setText(throwable.getMessage());
+            }
+        });
+    }
+
+
+    private void deleteData(EditText txt1) {
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("http://192.168.1.5/000/api_check/")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        InsertSanPham delSanPham = retrofit.create(InsertSanPham.class);
+        Call<ResSanPham> call = delSanPham.deleteSanPham(txt1.getText().toString());
+        call.enqueue(new Callback<ResSanPham>() {
+            @Override
+            public void onResponse(Call<ResSanPham> call, Response<ResSanPham> response) {
+                ResSanPham res = response.body();
+                tvKQ.setText(res.getMessage());
+            }
+
+            @Override
+            public void onFailure(Call<ResSanPham> call, Throwable throwable) {
+                tvKQ.setText(throwable.getMessage());
+            }
+        });
+    }
+
+    private void updateData(EditText txt1, EditText txt2, EditText txt3, TextView tvKQ) {
+        SanPham s = new SanPham(txt1.getText().toString(),
+                txt2.getText().toString(),
+                txt3.getText().toString());
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("http://192.168.1.5/000/api_check/")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        InsertSanPham updateSanPham = retrofit.create(InsertSanPham.class);
+        Call<ResSanPham> call = updateSanPham.updateSanPham(s.getMaSP(),s.getTenSP(),s.getMoTa());
+        call.enqueue(new Callback<ResSanPham>() {
+            @Override
+            public void onResponse(Call<ResSanPham> call, Response<ResSanPham> response) {
+                ResSanPham res = response.body();
+                tvKQ.setText(res.getMessage());
+            }
+
+            @Override
+            public void onFailure(Call<ResSanPham> call, Throwable throwable) {
+                tvKQ.setText(throwable.getMessage());
+            }
+        });
+    }
+
 }
