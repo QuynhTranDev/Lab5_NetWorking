@@ -52,4 +52,12 @@
         android:text="Click me"
         tools:ignore="HardcodedText" />
 
+    <Button
+        android:id="@+id/btnSelect"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:text="Select Data"
+        tools:ignore="HardcodedText" />
+
 </LinearLayout>

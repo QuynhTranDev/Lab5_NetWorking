@@ -1,6 +1,7 @@
 package com.example.lab5;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
@@ -11,6 +12,16 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+
+import com.android.volley.RequestQueue;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonArrayRequest;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -24,9 +35,9 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MainActivity extends AppCompatActivity {
     EditText txt1, txt2, txt3;
-    Button btnInsert;
+    Button btnInsert, btnSelect;
     TextView tvKQ;
-
+    Context context = this;
     @SuppressLint("MissingInflatedId")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,14 +56,48 @@ public class MainActivity extends AppCompatActivity {
         tvKQ = findViewById(R.id.tvKQ);
 
         btnInsert = findViewById(R.id.btnInsert);
+        btnSelect = findViewById(R.id.btnSelect);
+
+        btnSelect.setOnClickListener(v -> {
+            selectVolley();
+        });
 
         btnInsert.setOnClickListener(v -> {
 //            insertData(txt1, txt2, txt3, tvKQ);
 //            selectData();
 //            deleteData(txt1);
-            updateData(txt1, txt2, txt3, tvKQ);
+//            updateData(txt1, txt2, txt3, tvKQ);
         });
 
+    }
+
+    private void selectVolley() {
+        RequestQueue requestQueue = Volley.newRequestQueue(context);
+        String url = "https://hungnq28.000webhostapp.com/su2024/select.php";
+        JsonObjectRequest request = new JsonObjectRequest(url, new com.android.volley.Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject res) {
+                try {
+                    JSONArray array = res.getJSONArray("products");
+                    for (int i = 0; i < array.length(); i++) {
+                        JSONObject p = array.getJSONObject(i);
+                        String MaSP = p.getString("MaSP");
+                        String TenSP = p.getString("TenSP");
+                        String MoTa = p.getString("MoTa");
+                        strKQ += "MaSP: "+MaSP+"\n"+"TenSP: "+TenSP+"\n"+"MoTa: "+MoTa+"\n"+"\n";
+                    }
+                    tvKQ.setText(strKQ);
+                } catch (JSONException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }, new com.android.volley.Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError volleyError) {
+                tvKQ.setText(volleyError.getMessage());
+            }
+        });
+        requestQueue.add(request);
     }
 
     private void insertData(EditText txt1, EditText txt2, EditText txt3, TextView tvKQ) {
